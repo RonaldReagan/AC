@@ -18,11 +18,20 @@ int gamepad_opencontroller(int which) {
     maingamepad = SDL_GameControllerOpen( which );
     
     if( maingamepad == NULL ) {
-        conoutf("Warning: Unable to open game controller! SDL Error: %s", SDL_GetError());
+        conoutf("\f3Warning: \f5Unable to open game controller! SDL Error: %s", SDL_GetError());
         return 1;
     } else {
-        conoutf("Opened gamepad: %s", SDL_GameControllerName(maingamepad));
+        conoutf("Connected gamepad: %s", SDL_GameControllerName(maingamepad));
         return 0;
+    }
+}
+
+void gamepad_openavaliablecontroller() {
+    //Check for joysticks
+    for (int i = 0; i < SDL_NumJoysticks(); i++) {
+        if (SDL_IsGameController(i)) {
+            if (!gamepad_opencontroller(i)) break;
+        }
     }
 }
 
@@ -35,12 +44,7 @@ void gamepad_init() {
         conoutf("Warning: Unable to open game controller mapping file! SDL Error: %s", SDL_GetError());
     }
     
-    //Check for joysticks
-    if( SDL_NumJoysticks() < 1 ) {
-        conoutf("No gamepads connected!");
-    } else {
-        gamepad_opencontroller(0);
-    }
+    gamepad_openavaliablecontroller();
 }
 
 void gamepad_quit() {
@@ -63,8 +67,28 @@ void gamepad_controllerremoved(int which) {
     if ( SDL_GameControllerFromInstanceID(which) == maingamepad ) {
         SDL_GameControllerClose(maingamepad);
         maingamepad = NULL;
+        gamepad_openavaliablecontroller();
     }
 }
+
+void gamepad_power() {
+    if (maingamepad == NULL) {
+        intret(-1);
+        return;
+    }
+    SDL_Joystick* joy = SDL_GameControllerGetJoystick(maingamepad);
+    intret(SDL_JoystickCurrentPowerLevel(joy));
+}
+COMMAND(gamepad_power, "");
+
+void gamepad_list() {
+    vector<char> w;
+    w.add('a');
+    w.add('b');
+    w.add('c');
+    resultcharvector(w, 1);
+}
+COMMAND(gamepad_list, "");
 
 
 void gamepad_look() {
@@ -85,12 +109,12 @@ void gamepad_look() {
     int raw_x = SDL_GameControllerGetAxis(maingamepad, axis_x);
     int raw_y = SDL_GameControllerGetAxis(maingamepad, axis_y);
     
-    if ( raw_x < -gamepad_deadzone || raw_x > gamepad_deadzone) {
-        dx = (float(raw_x) / 32768) * 10;
+    if ( abs(raw_x) > gamepad_deadzone) {
+        dx = (float(raw_x - gamepad_deadzone) / 32768);
     }
     
-    if ( raw_y < -gamepad_deadzone || raw_y > gamepad_deadzone) {
-        dy = (float(raw_y) / 32768) * 10;
+    if ( abs(raw_y) > gamepad_deadzone) {
+        dy = (float(raw_y - gamepad_deadzone) / 32768);
     }
     
     if(gamepad_filter > 0.0001f) { // simple IIR-like filter (1st order lowpass)
@@ -120,4 +144,22 @@ void gamepad_look() {
         player1->yaw = camera1->yaw;
         player1->pitch = camera1->pitch;
     }
+}
+
+extern char axisstates[SDL_CONTROLLER_AXIS_MAX*2];
+void gamepad_debugrender() {
+    char text[1000];
+    char text2[1000];
+    for (int i = 0; i < SDL_CONTROLLER_AXIS_MAX*2; i++) {
+        defformatstring(chunk)(" %d", axisstates[i]);
+        strcat(text, chunk);
+    }
+    
+    for (int i = SDL_CONTROLLER_AXIS_LEFTX; i < SDL_CONTROLLER_AXIS_MAX; i++) {
+        defformatstring(chunk)(" %d", SDL_GameControllerGetAxis(maingamepad, (SDL_GameControllerAxis) i));
+        strcat(text2, chunk);
+    }
+    
+    draw_text(text, 30, 500);
+    draw_text(text2, 30, 600);
 }

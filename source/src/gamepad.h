@@ -8,5 +8,6 @@ void gamepad_quit();
 void gamepad_controlleradded(int which);
 void gamepad_controllerremoved(int which);
 void gamepad_look();
+void gamepad_debugrender();
 
 #endif /* gamepad_h */

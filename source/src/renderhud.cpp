@@ -89,6 +89,7 @@ VARP(hidevote, 0, 0, 2);
 VARP(hidehudmsgs, 0, 0, 1);
 VARP(hidehudequipment, 0, 0, 1);
 VARP(hideconsole, 0, 0, 1);
+VARP(gamepad_debug, 0, 0, 1);
 VARP(hidespecthud, 0, 0, 1);
 VAR(showmap, 0, 0, 1);
 VARP(editinfopanelmillis, 5, 80, 2000);
@@ -871,6 +872,9 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
     extern gmenu *curmenu;
     if(!is_spect && !editmode && !watchingdemo && !command && curmenu == scoremenu) r_accuracy(commandh);
     if(!hideconsole) renderconsole();
+    if(gamepad_debug) {
+        gamepad_debugrender();
+    }
     formatstring(enginestateinfo)("%d %d %d %d %d", curfps, lod_factor(), nquads, curvert, xtraverts);
 
     string ltime, text;
