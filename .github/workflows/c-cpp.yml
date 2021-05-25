@@ -19,6 +19,6 @@ jobs:
       run: make server
       working-directory: source/src
     - uses: actions/upload-artifact@main
-        with:
-          name: server artifact
-          path: source/src/ac_server
+      with:
+        name: server artifact
+        path: source/src/ac_server
