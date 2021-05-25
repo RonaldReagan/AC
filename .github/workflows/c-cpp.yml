@@ -1,0 +1,24 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master, cicd ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install dependancies
+      run: sudo apt-get -y install build-essential libsdl1.2debian libsdl1.2debian-pulseaudio libsdl1.2-dev libsdl-image1.2 libsdl-image1.2-dev libopenal1 libopenal-dev libvorbis-dev libcurl3 libcurl4-openssl-dev
+    - uses: actions/checkout@v2
+    - name: make
+      run: make server
+      working-directory: source/src
+    - uses: actions/upload-artifact@main
+        with:
+          name: server artifact
+          path: source/src/ac_server
