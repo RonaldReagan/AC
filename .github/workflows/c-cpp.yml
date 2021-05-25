@@ -15,12 +15,12 @@ jobs:
       run: sudo apt-get -y install build-essential libsdl1.2debian libsdl1.2debian libsdl1.2-dev libsdl-image1.2 libsdl-image1.2-dev libopenal1 libopenal-dev libvorbis-dev libcurl4 libcurl4-openssl-dev
     - uses: actions/checkout@v2
     - name: make
-      run: make server_install
+      run: make server
       working-directory: source/src
     - uses: actions/upload-artifact@main
       with:
-        name: bin
-        path: bin/*
+        name: ac_server
+        path: source/src/ac_server
 
   deploy:
     needs: build
@@ -30,13 +30,13 @@ jobs:
     steps:
     - uses: actions/download-artifact@main
       with: 
-        name: bin
-        path: bin/
+        name: ac_server
+        path: ac_server
     - name: copy file via ssh
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
-        source: "bin"
+        source: "ac_server/*"
         target: "~/github_upload/commit_${{github.sha}}/"
