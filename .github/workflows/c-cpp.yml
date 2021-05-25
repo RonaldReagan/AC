@@ -19,7 +19,7 @@ jobs:
       working-directory: source/src
     - uses: actions/upload-artifact@main
       with:
-        name: server artifact
+        name: ac_server
         path: source/src/ac_server
 
   deploy:
@@ -30,7 +30,7 @@ jobs:
     steps:
     - uses: actions/download-artifact@main
       with: 
-        name: server artifact
+        name: ac_server
         path: ac_server
     - name: copy file via ssh
       uses: appleboy/scp-action@master
@@ -39,4 +39,4 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         source: "ac_server"
-        target: "~/github_upload/"
+        target: "~/github_upload/${{GITHUB_SHA}}"
