@@ -42,3 +42,4 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         source: "ac_server/ac_server"
         target: "~/github_upload/commit_${{github.sha}}/"
+        strip_components: 1
