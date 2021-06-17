@@ -1,0 +1,45 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ master, cicd ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install dependancies
+      run: sudo apt-get -y install build-essential libsdl1.2debian libsdl1.2debian libsdl1.2-dev libsdl-image1.2 libsdl-image1.2-dev libopenal1 libopenal-dev libvorbis-dev libcurl4 libcurl4-openssl-dev
+    - uses: actions/checkout@v2
+    - name: make
+      run: make server
+      working-directory: source/src
+    - uses: actions/upload-artifact@main
+      with:
+        name: ac_server
+        path: source/src/ac_server
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: fruity
+    
+    steps:
+    - uses: actions/download-artifact@main
+      with: 
+        name: ac_server
+        path: ac_server
+    - name: Display structure of downloaded files
+      run: ls -R
+    - name: copy file via ssh
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        source: "ac_server/ac_server"
+        target: "~/github_upload/commit_${{github.sha}}/"
+        strip_components: 1
